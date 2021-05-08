@@ -1,10 +1,12 @@
-from flask import abort, Flask, make_response, request
+from flask import abort, Flask, make_response, render_template, request
 
 from .replace import replace_cve_text_with_link
 
 app = Flask('CVE Text Replacer Server')
 
 def process_form_post():
+    abort(make_response(501))
+    # This isn't technically correct. We need to wrap this guy in HTML to make the form response valid.
     doc = request.form.get('doc')
     if doc:
         return replace_cve_text_with_link(doc)
@@ -16,7 +18,7 @@ def process_text_post():
 
 def process_post():
     content_type = request.headers.get('Content-Type')
-    if 'multipart/form-data' in content_type:
+    if 'form-data' in content_type:
         return process_form_post()
     elif 'text/plain' in content_type:
         return process_text_post()
@@ -28,7 +30,6 @@ def process_post():
 def root_method():
     if request.method == 'GET':
         # Eventually we'll have a form here, but for now, it's fine.
-        abort(make_response(501))
-        pass
+        return render_template('base.html')
     if request.method == 'POST':
         return process_post()
